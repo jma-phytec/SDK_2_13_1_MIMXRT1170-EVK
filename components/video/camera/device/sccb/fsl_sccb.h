@@ -89,6 +89,20 @@ status_t SCCB_ReadReg(
     uint8_t i2cAddr, sccb_reg_addr_t addrType, uint32_t reg, uint8_t *value, sccb_i2c_receive_func_t i2cReceiveFunc);
 
 /*!
+ * @brief Read the multiple SCCB registers.
+ *
+ * @param i2cAddr SCCB I2C address.
+ * @param addrType SCCB register address type.
+ * @param reg The register to read.
+ * @param value The value read out.
+ * @param len Length of the value to write.
+ * @param i2cReceiveFunc The actual I2C receive function.
+ * @return Returns @ref kStatus_Success if success, otherwise returns error code.
+ */
+status_t SCCB_ReadMultiRegs(
+    uint8_t i2cAddr, sccb_reg_addr_t addrType, uint32_t reg, uint8_t *value, uint32_t len, sccb_i2c_receive_func_t i2cReceiveFunc);
+
+/*!
  * @brief Modify the SCCB register value.
  *
  * This function modifies some bit fields of a register.

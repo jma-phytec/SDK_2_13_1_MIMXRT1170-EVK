@@ -39,6 +39,12 @@ status_t SCCB_ReadReg(
     return i2cReceiveFunc(i2cAddr, reg, addrType, value, 1);
 }
 
+status_t SCCB_ReadMultiRegs(
+    uint8_t i2cAddr, sccb_reg_addr_t addrType, uint32_t startReg, uint8_t *value, uint32_t len, sccb_i2c_receive_func_t i2cReceiveFunc)
+{
+    return i2cReceiveFunc(i2cAddr, startReg, addrType, value, len);
+}
+
 status_t SCCB_ModifyReg(uint8_t i2cAddr,
                         sccb_reg_addr_t addrType,
                         uint32_t reg,

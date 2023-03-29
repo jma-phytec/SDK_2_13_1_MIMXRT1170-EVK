@@ -9,7 +9,7 @@
 #include "fsl_gpio.h"
 #include "fsl_csi.h"
 #include "fsl_csi_camera_adapter.h"
-#include "fsl_ov5640.h"
+#include "fsl_ar0521.h"
 #include "fsl_mipi_csi2rx.h"
 #include "board.h"
 #include "fsl_debug_console.h"
@@ -44,16 +44,14 @@ camera_receiver_handle_t cameraReceiver = {
     .privateData = &csiPrivateData,
 };
 
-static ov5640_resource_t ov5640Resource = {
+static ar0521_resource_t ar0521Resource = {
     .i2cSendFunc      = BOARD_Camera_I2C_SendSCCB,
     .i2cReceiveFunc   = BOARD_Camera_I2C_ReceiveSCCB,
-    .pullResetPin     = BOARD_PullCameraResetPin,
-    .pullPowerDownPin = BOARD_PullCameraPowerDownPin,
 };
 
 camera_device_handle_t cameraDevice = {
-    .resource = &ov5640Resource,
-    .ops      = &ov5640_ops,
+    .resource = &ar0521Resource,
+    .ops      = &ar0521_ops,
 };
 
 /*******************************************************************************
@@ -65,30 +63,6 @@ void CSI_IRQHandler(void)
 {
     CSI_DriverIRQHandler();
     __DSB();
-}
-
-static void BOARD_PullCameraResetPin(bool pullUp)
-{
-    if (pullUp)
-    {
-        GPIO_PinWrite(BOARD_CAMERA_RST_GPIO, BOARD_CAMERA_RST_PIN, 1);
-    }
-    else
-    {
-        GPIO_PinWrite(BOARD_CAMERA_RST_GPIO, BOARD_CAMERA_RST_PIN, 0);
-    }
-}
-
-static void BOARD_PullCameraPowerDownPin(bool pullUp)
-{
-    if (pullUp)
-    {
-        GPIO_PinWrite(BOARD_CAMERA_PWDN_GPIO, BOARD_CAMERA_PWDN_PIN, 1);
-    }
-    else
-    {
-        GPIO_PinWrite(BOARD_CAMERA_PWDN_GPIO, BOARD_CAMERA_PWDN_PIN, 0);
-    }
 }
 
 void BOARD_EarlyInitCamera(void)

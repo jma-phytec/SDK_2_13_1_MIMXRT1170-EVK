@@ -351,7 +351,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/..</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/sccb</state>
-          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640</state>
+          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/dc/lcdifv2</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/rm68191</state>
@@ -1454,7 +1454,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/..</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/sccb</state>
-          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640</state>
+          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/dc/lcdifv2</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/rm68191</state>
@@ -2553,7 +2553,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/..</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/sccb</state>
-          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640</state>
+          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/dc/lcdifv2</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/rm68191</state>
@@ -3656,7 +3656,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/..</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/sccb</state>
-          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640</state>
+          <state>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/dc/lcdifv2</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display</state>
           <state>$PROJ_DIR$/../../../../../../../components/video/display/rm68191</state>
@@ -4477,10 +4477,10 @@
       <name>$PROJ_DIR$/../../../../../../../components/video/camera/device/sccb/fsl_sccb.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640/fsl_ov5640.h</name>
+      <name>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521/fsl_ar0521.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$/../../../../../../../components/video/camera/device/ov5640/fsl_ov5640.c</name>
+      <name>$PROJ_DIR$/../../../../../../../components/video/camera/device/ar0521/fsl_ar0521.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$/../../../../../../../components/video/display/dc/lcdifv2/fsl_dc_fb_lcdifv2.h</name>

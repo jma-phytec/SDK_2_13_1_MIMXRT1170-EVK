@@ -19,7 +19,7 @@ Hardware requirements
 - MIMXRT1170-EVK board
 - Personal Computer
 - RK055AHD091 panel or RK055MHD091 panel
-- OV5640 camera
+- AR0521 camera
 
 Board settings
 ==============

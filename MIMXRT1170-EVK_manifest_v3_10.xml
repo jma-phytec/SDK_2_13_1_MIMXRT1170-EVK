@@ -7906,6 +7906,31 @@ ${load}</script>
         <include_path relative_path="./" type="c_include"/>
       </include_paths>
     </component>
+    <component id="driver.camera-device-ar0521.MIMXRT1176" name="camera-device-ar0521" brief="Driver camera-device-ar0521" version="1.0.1" full_name="Driver camera-device-ar0521" devices="MIMXRT1176xxxxx" device_cores="cm4_MIMXRT1176xxxxx cm7_MIMXRT1176xxxxx" slave_roles="M4SLAVE M7SLAVE" user_visible="true" type="board_component" package_base_path="components/video/camera/device/ar0521" project_base_path="video">
+      <dependencies>
+        <all>
+          <component_dependency value="driver.video-common.MIMXRT1176"/>
+          <component_dependency value="driver.camera-common.MIMXRT1176"/>
+          <component_dependency value="driver.camera-device-common.MIMXRT1176"/>
+          <component_dependency value="driver.camera-device-sccb.MIMXRT1176"/>
+        </all>
+      </dependencies>
+      <source relative_path="./" type="c_include">
+        <files mask="fsl_ar0521.h"/>
+      </source>
+      <source relative_path="./" type="src">
+        <files mask="fsl_ar0521.c"/>
+      </source>
+      <source toolchain="armgcc" relative_path="." type="workspace" device_cores="cm4_MIMXRT1176xxxxx">
+        <files mask="driver_camera-device-ar0521_MIMXRT1176_cm4.cmake" hidden="true"/>
+      </source>
+      <source toolchain="armgcc" relative_path="." type="workspace" device_cores="cm7_MIMXRT1176xxxxx">
+        <files mask="driver_camera-device-ar0521_MIMXRT1176_cm7.cmake" hidden="true"/>
+      </source>
+      <include_paths>
+        <include_path relative_path="./" type="c_include"/>
+      </include_paths>
+    </component>
     <component id="driver.camera-device-sccb.MIMXRT1176" name="camera-device-sccb" brief="Driver camera-device-sccb" version="1.0.1" full_name="Driver camera-device-sccb" devices="MIMXRT1176xxxxx" device_cores="cm4_MIMXRT1176xxxxx cm7_MIMXRT1176xxxxx" slave_roles="M4SLAVE M7SLAVE" user_visible="true" type="software_component" package_base_path="components/video/camera/device/sccb" project_base_path="video">
       <dependencies>
         <component_dependency value="platform.drivers.common.MIMXRT1176"/>
@@ -62490,6 +62515,7 @@ ${load}</script>
       </source>
       <source relative_path="mpp/hal" project_relative_path="mpp/hal/" type="src">
         <files mask="hal_camera_mipi_ov5640.c"/>
+        <files mask="hal_camera_mipi_ar0521.c"/>
         <files mask="hal_display_lcdifv2_rk055ahd091.c"/>
         <files mask="hal_camera_csi_mt9m114.c"/>
         <files mask="hal_display_lcdif_rk043fn.c"/>

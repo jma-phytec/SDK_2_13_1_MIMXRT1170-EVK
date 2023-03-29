@@ -59,7 +59,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PUBLIC
 
 set(CMAKE_MODULE_PATH
     ${SdkRootDirPath}/components/video/camera/device/sccb
-    ${SdkRootDirPath}/components/video/camera/device/ov5640
+    ${SdkRootDirPath}/components/video/camera/device/ar0521
     ${SdkRootDirPath}/components/video/display/dc/lcdifv2
     ${SdkRootDirPath}/components/video/display
     ${SdkRootDirPath}/components/video/display/rm68191
@@ -89,7 +89,7 @@ set(CMAKE_MODULE_PATH
 # include modules
 include(driver_camera-device-sccb_MIMXRT1176_cm7)
 
-include(driver_camera-device-ov5640_MIMXRT1176_cm7)
+include(driver_camera-device-ar0521_MIMXRT1176_cm7)
 
 include(driver_dc-fb-lcdifv2_MIMXRT1176_cm7)
 
