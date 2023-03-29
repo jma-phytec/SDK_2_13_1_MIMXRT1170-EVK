@@ -80,15 +80,15 @@ void BOARD_InitLpuartPins(void);              /* Function assigned for the Corte
  */
 void BOARD_InitMipiPanelPins(void);           /* Function assigned for the Cortex-M7F */
 
-/* GPIO_LPSR_07 (coord R8), I2C6_SCL/J50[12] */
+/* GPIO_AD_18 (coord M16), SAI1_RX_SYNC/J9[5]/J50[19]/U32[13] */
 /* Routed pin properties */
-#define BOARD_INITMIPICAMERAPINS_I2C6_SCL_PERIPHERAL                      LPI2C6   /*!< Peripheral name */
-#define BOARD_INITMIPICAMERAPINS_I2C6_SCL_SIGNAL                             SCL   /*!< Signal name */
+#define BOARD_INITMIPICAMERAPINS_I2C2_SCL_PERIPHERAL                      LPI2C2   /*!< Peripheral name */
+#define BOARD_INITMIPICAMERAPINS_I2C2_SCL_SIGNAL                             SCL   /*!< Signal name */
 
-/* GPIO_LPSR_06 (coord P8), I2C6_SDA/J50[11] */
+/* GPIO_AD_19 (coord L16), SAI1_RX_BCLK/J9[1]/J50[18]/U32[12] */
 /* Routed pin properties */
-#define BOARD_INITMIPICAMERAPINS_I2C6_SDA_PERIPHERAL                      LPI2C6   /*!< Peripheral name */
-#define BOARD_INITMIPICAMERAPINS_I2C6_SDA_SIGNAL                             SDA   /*!< Signal name */
+#define BOARD_INITMIPICAMERAPINS_I2C2_SDA_PERIPHERAL                      LPI2C2   /*!< Peripheral name */
+#define BOARD_INITMIPICAMERAPINS_I2C2_SDA_SIGNAL                             SDA   /*!< Signal name */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

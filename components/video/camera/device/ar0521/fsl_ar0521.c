@@ -197,7 +197,7 @@ static status_t AR0521_LoadRegVal(camera_device_handle_t *handle, const ar0521_r
 
 static status_t AR0521_SoftwareReset(camera_device_handle_t *handle)
 {
-	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, (uint8_t)BIT_RESET, (uint8_t)1U << 0);
+	return AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, (uint8_t)BIT_RESET, (uint8_t)1U << 0);
 }
 
 status_t AR0521_Init(camera_device_handle_t *handle, const camera_config_t *config)

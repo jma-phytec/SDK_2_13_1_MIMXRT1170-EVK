@@ -158,8 +158,8 @@ extern button_config_t g_buttonConfig[];
 #define BOARD_CODEC_I2C_CLOCK_FREQ           (24000000U)
 
 /* @Brief Board CAMERA configuration */
-#define BOARD_CAMERA_I2C_BASEADDR      LPI2C6
-#define BOARD_CAMERA_I2C_CLOCK_ROOT    kCLOCK_Root_Lpi2c6
+#define BOARD_CAMERA_I2C_BASEADDR      LPI2C2
+#define BOARD_CAMERA_I2C_CLOCK_ROOT    kCLOCK_Root_Lpi2c2
 #define BOARD_CAMERA_I2C_CLOCK_SOURCE  (1U)  /* OSC24M. */
 #define BOARD_CAMERA_I2C_CLOCK_DIVIDER (12U) /* Divider = 12, LPI2C clock frequency 2M. */
 

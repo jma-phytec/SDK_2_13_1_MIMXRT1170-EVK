@@ -16,6 +16,8 @@ pin_labels:
 - {pin_num: A7, pin_signal: GPIO_DISP_B2_14, label: CAMERA_RST, identifier: CAMERA_RST}
 - {pin_num: A4, pin_signal: GPIO_DISP_B2_15, label: DISP_POWER, identifier: DISP_POWER}
 - {pin_num: R13, pin_signal: GPIO_AD_02, label: DISP_RST, identifier: DISP_RST}
+- {pin_num: M16, pin_signal: GPIO_AD_18, label: 'SAI1_RX_SYNC/J9[5]/J50[19]/U32[13]', identifier: I2C2_SCL}
+- {pin_num: L16, pin_signal: GPIO_AD_19, label: 'SAI1_RX_BCLK/J9[1]/J50[18]/U32[12]', identifier: I2C2_SDA}
 - {pin_num: L14, pin_signal: GPIO_AD_26, label: CAMERA_PWDN, identifier: CAMERA_PWDN}
 - {pin_num: K17, pin_signal: GPIO_AD_30, label: DISP_BL, identifier: DISP_BL}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
@@ -128,8 +130,8 @@ void BOARD_InitMipiPanelPins(void) {
 BOARD_InitMipiCameraPins:
 - options: {callFromInitBoot: 'false', coreID: cm7, enableClock: 'true'}
 - pin_list:
-  - {pin_num: R8, peripheral: LPI2C6, signal: SCL, pin_signal: GPIO_LPSR_07, software_input_on: Enable}
-  - {pin_num: P8, peripheral: LPI2C6, signal: SDA, pin_signal: GPIO_LPSR_06, software_input_on: Enable}
+  - {pin_num: M16, peripheral: LPI2C2, signal: SCL, pin_signal: GPIO_AD_18, software_input_on: Enable, pull_keeper_select: Keeper}
+  - {pin_num: L16, peripheral: LPI2C2, signal: SDA, pin_signal: GPIO_AD_19, software_input_on: Enable, pull_up_down_config: Pull_Up, pull_keeper_select: Keeper}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
@@ -140,14 +142,32 @@ BOARD_InitMipiCameraPins:
  *
  * END ****************************************************************************************************************/
 void BOARD_InitMipiCameraPins(void) {
-  CLOCK_EnableClock(kCLOCK_Iomuxc_Lpsr);      /* LPCG on: LPCG is ON. */
+  CLOCK_EnableClock(kCLOCK_Iomuxc);           /* LPCG on: LPCG is ON. */
 
   IOMUXC_SetPinMux(
-      IOMUXC_GPIO_LPSR_06_LPI2C6_SDA,         /* GPIO_LPSR_06 is configured as LPI2C6_SDA */
-      1U);                                    /* Software Input On Field: Force input path of pad GPIO_LPSR_06 */
+      IOMUXC_GPIO_AD_18_LPI2C2_SCL,           /* GPIO_AD_18 is configured as LPI2C2_SCL */
+      1U);                                    /* Software Input On Field: Force input path of pad GPIO_AD_18 */
   IOMUXC_SetPinMux(
-      IOMUXC_GPIO_LPSR_07_LPI2C6_SCL,         /* GPIO_LPSR_07 is configured as LPI2C6_SCL */
-      1U);                                    /* Software Input On Field: Force input path of pad GPIO_LPSR_07 */
+      IOMUXC_GPIO_AD_19_LPI2C2_SDA,           /* GPIO_AD_19 is configured as LPI2C2_SDA */
+      1U);                                    /* Software Input On Field: Force input path of pad GPIO_AD_19 */
+  IOMUXC_SetPinConfig(
+      IOMUXC_GPIO_AD_18_LPI2C2_SCL,           /* GPIO_AD_18 PAD functional properties : */
+      0x0AU);                                 /* Slew Rate Field: Slow Slew Rate
+                                                 Drive Strength Field: high drive strength
+                                                 Pull / Keep Select Field: Pull Disable, Highz
+                                                 Pull Up / Down Config. Field: Weak pull up
+                                                 Open Drain Field: Disabled
+                                                 Domain write protection: Both cores are allowed
+                                                 Domain write protection lock: Neither of DWP bits is locked */
+  IOMUXC_SetPinConfig(
+      IOMUXC_GPIO_AD_19_LPI2C2_SDA,           /* GPIO_AD_19 PAD functional properties : */
+      0x0AU);                                 /* Slew Rate Field: Slow Slew Rate
+                                                 Drive Strength Field: high drive strength
+                                                 Pull / Keep Select Field: Pull Disable, Highz
+                                                 Pull Up / Down Config. Field: Weak pull up
+                                                 Open Drain Field: Disabled
+                                                 Domain write protection: Both cores are allowed
+                                                 Domain write protection lock: Neither of DWP bits is locked */
 }
 
 /***********************************************************************************************************************
