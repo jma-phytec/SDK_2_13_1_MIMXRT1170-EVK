@@ -322,6 +322,11 @@ struct ar0521 *sensor = &ar0521_sensor;
  * Code
  ******************************************************************************/
 
+static inline int bpp_to_index(unsigned int bpp)
+{
+	return (bpp - 8) / 2;
+}
+
 static status_t AR0521_WriteReg16(camera_device_handle_t *handle, uint32_t reg, uint16_t val)
 {
 	status_t status;
@@ -505,56 +510,53 @@ static void ar0521_set_defaults(void)
 	return;
 }
 
-static int ar0521_mipi_enter_lp11(struct ar0521 *sensor)
+static int ar0521_mipi_enter_lp11(camera_device_handle_t *handle)
 {
 	int ret;
 
-	ret = ar0521_write(sensor, AR0521_SERIAL_TEST,
+	AR0521_WriteReg16(handle, AR0521_SERIAL_TEST,
 			   AR0521_TEST_MODE_LP11 |
 			   AR0521_TEST_LANE_0 | AR0521_TEST_LANE_1 |
 			   AR0521_TEST_LANE_2 | AR0521_TEST_LANE_3);
 
-	ret = ar0521_set_bits(sensor, AR0521_SER_CTRL_STAT,
-			      BIT_FRAMER_TEST_MODE);
+	AR0521_ModifyReg16(handle, AR0521_SER_CTRL_STAT, BIT_FRAMER_TEST_MODE, 1);
 
-	ret = ar0521_update_bits(sensor, AR0521_RESET_REGISTER,
-				 BIT_STREAM | BIT_SMIA_SER_DIS,
-				 BIT_STREAM);
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_STREAM, 1);
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_SMIA_SER_DIS, 0);
+
 	return ret;
 }
 
-static int ar0521_enter_standby(struct ar0521 *sensor)
+static int ar0521_enter_standby(camera_device_handle_t *handle)
 {
 	uint16_t timeout = 1000;
 	int ret;
 	uint16_t val;
 
-	ret = ar0521_clear_bits(sensor, AR0521_RESET_REGISTER,
-				BIT_STREAM);
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_STREAM, 0);
 
-	while (timeout) {
-		ar0521_read(sensor, AR0521_FRAME_STATUS, &val);
+	while(timeout)
+	{
+		AR0521_ReadReg16(handle, AR0521_FRAME_STATUS, &val);
 
-		if (val & BIT_STANDBY_STATUS) {
+		if (val & BIT_STANDBY_STATUS)
+		{
 			break;
 		}
-
 		timeout--;
-
-		}
+		AR0521_DelayMs(5);
 	}
 
 	AR0521_DelayMs(5);
 
-	ar0521_set_bits(sensor, AR0521_RESET_REGISTER, BIT_SMIA_SER_DIS);
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_SMIA_SER_DIS, 1);
 
-	ar0521_clear_bits(sensor, AR0521_SER_CTRL_STAT,
-				BIT_FRAMER_TEST_MODE);
+	AR0521_ModifyReg16(handle, AR0521_SER_CTRL_STAT, BIT_FRAMER_TEST_MODE, 0);
 
 	return 0;
 }
 
-static int ar0521_s_power(int on)
+static int ar0521_s_power(camera_device_handle_t *handle, int on)
 {
 	int ret = 0;
 
@@ -563,49 +565,170 @@ static int ar0521_s_power(int on)
 		/* Enable MIPI LP-11 test mode as required by e.g. i.MX 6 */
 		if(!sensor->is_streaming)
 		{
-			ret = ar0521_mipi_enter_lp11(sensor);
+			ret = ar0521_mipi_enter_lp11(handle);
 		}
 	}
 	else
 	{
-		ar0521_enter_standby(sensor);
+		ar0521_enter_standby(handle);
 	}
 
 	return ret;
 }
 
-static int ar0521_stream_on(struct ar0521 *sensor)
+static int ar0521_config_pll(camera_device_handle_t *handle)
+{
+	int index;
+	int ret;
+
+	index = bpp_to_index(sensor->bpp);
+
+	AR0521_WriteReg16(handle, AR0521_VT_PIX_CLK_DIV, sensor->pll[index].vt_pix_div);
+
+	AR0521_WriteReg16(handle, AR0521_VT_SYS_CLK_DIV, sensor->pll[index].vt_sys_div);
+
+	AR0521_WriteReg16(handle, AR0521_PRE_PLL_CLK_DIV,
+			   BIT_PLL_DIV2(sensor->pll[index].pll2_div) |
+			   BIT_PLL_DIV1(sensor->pll[index].pll_div));
+
+	AR0521_WriteReg16(handle, AR0521_PLL_MUL,
+			   BIT_PLL_MUL2(sensor->pll[index].pll2_mul) |
+			   BIT_PLL_MUL1(sensor->pll[index].pll_mul));
+
+	AR0521_WriteReg16(handle, AR0521_OP_PIX_CLK_DIV,
+			   sensor->pll[index].op_pix_div);
+
+	AR0521_WriteReg16(handle, AR0521_OP_SYS_CLK_DIV,
+			   sensor->pll[index].op_sys_div);
+
+    AR0521_DelayMs(5);
+
+	return 0;
+}
+
+static int ar0521_config_frame(camera_device_handle_t *handle)
+{
+	unsigned int height = sensor->fmt.height * sensor->h_scale;
+	unsigned int width = sensor->fmt.width * sensor->w_scale;
+	int ret;
+	uint16_t x_end, y_end;
+
+	AR0521_WriteReg16(handle, AR0521_Y_ADDR_START, sensor->crop.top);
+
+	AR0521_WriteReg16(handle, AR0521_X_ADDR_START, sensor->crop.left);
+
+	y_end = sensor->crop.top + height - 1;
+	AR0521_WriteReg16(handle, AR0521_Y_ADRR_END, y_end);
+
+	x_end = sensor->crop.left + width - 1;
+	AR0521_WriteReg16(handle, AR0521_X_ADRR_END, x_end);
+
+	AR0521_WriteReg16(handle, AR0521_FRAME_LENGTH_LINES, sensor->vlen);
+
+	AR0521_WriteReg16(handle, AR0521_LINE_LENGTH_PCK, sensor->hlen);
+
+	AR0521_WriteReg16(handle, AR0521_X_OUTPUT_SIZE, sensor->fmt.width);
+
+	AR0521_WriteReg16(handle, AR0521_Y_OUTPUT_SIZE, sensor->fmt.height);
+
+	AR0521_WriteReg16(handle, AR0521_X_ODD_INC, (sensor->w_scale << 1) - 1);
+
+	AR0521_WriteReg16(handle, AR0521_Y_ODD_INC, (sensor->h_scale << 1) - 1);
+
+	return ret;
+}
+
+static int ar0521_config_mipi(camera_device_handle_t *handle)
+{
+	int ret;
+	uint16_t val;
+
+	switch (sensor->bpp) {
+	case 8:
+		val = AR0521_CSI2_DT_RAW8;
+		break;
+	case 10:
+		val = AR0521_CSI2_DT_RAW10;
+		break;
+	case 12:
+		val = AR0521_CSI2_DT_RAW12;
+		break;
+	}
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_CNTRL, val);
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_TIMING_0,
+			   BIT_HS_PREP(sensor->info.t_hs_prep) |
+			   BIT_HS_ZERO(sensor->info.t_hs_zero) |
+			   BIT_HS_TRAIL(sensor->info.t_hs_trail));
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_TIMING_1,
+			   BIT_CLK_PREP(sensor->info.t_clk_prep) |
+			   BIT_CLK_ZERO(sensor->info.t_clk_zero) |
+			   BIT_CLK_TRAIL(sensor->info.t_clk_trail));
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_TIMING_2,
+			   BIT_BGAP(sensor->info.t_bgap) |
+			   BIT_CLK_PRE(sensor->info.t_clk_pre) |
+			   BIT_CLK_POST_MSBS(sensor->info.t_clk_post_msbs));
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_TIMING_3,
+			   BIT_LPX(sensor->info.t_lpx) |
+			   BIT_WAKEUP(sensor->info.t_wakeup) |
+			   BIT_CLK_POST(sensor->info.t_clk_post));
+
+	AR0521_WriteReg16(handle, AR0521_MIPI_TIMING_4,
+			   (sensor->info.cont_tx_clk ? BIT_CONT_TX_CLK : 0) |
+			   (sensor->info.vreg_mode ? BIT_VREG_MODE : 0) |
+			   BIT_HS_EXIT(sensor->info.t_hs_exit) |
+			   BIT_INIT(sensor->info.t_init));
+
+	AR0521_WriteReg16(handle, AR0521_DATA_FORMAT_BITS,
+			   BIT_DATA_FMT_IN(sensor->bpp) |
+			   BIT_DATA_FMT_OUT(sensor->bpp));
+
+	AR0521_WriteReg16(handle, AR0521_SERIAL_FORMAT,
+			   BIT_TYPE(AR0521_TYPE_MIPI) |
+			   BIT_LANES(sensor->info.num_lanes));
+
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_STREAM, 1);
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_MASK_BAD, 1);
+
+	AR0521_ModifyReg16(handle, AR0521_RESET_REGISTER, BIT_SMIA_SER_DIS, 0);
+
+	AR0521_ModifyReg16(handle, 0x3f20, BIT(3), 0);
+
+	return ret;
+}
+
+static int ar0521_stream_on(camera_device_handle_t *handle)
 {
 	int ret;
 
-	ret = ar0521_enter_standby(sensor);
+	ret = ar0521_enter_standby(handle);
 
-	ret = ar0521_config_pll(sensor);
+	ret = ar0521_config_pll(handle);
 
-	ret = ar0521_config_frame(sensor);
+	ret = ar0521_config_frame(handle);
 
-	ret = ar0521_config_mipi(sensor);
+	ret = ar0521_config_mipi(handle);
 
 	sensor->is_streaming = true;
 	return 0;
 }
 
-static int ar0521_stream_off(struct ar0521 *sensor)
+static int ar0521_stream_off(camera_device_handle_t *handle)
 {
 	int ret;
 
-	if (sensor->trigger) {
-		ret = ar0521_unset_trigger(sensor);
-	}
-
-	ret = ar0521_enter_standby(sensor);
+	ret = ar0521_enter_standby(handle);
 
 	sensor->is_streaming = false;
 	return ret;
 }
 
 
-static int ar0521_s_stream(int enable)
+static int ar0521_s_stream(camera_device_handle_t *handle, int enable)
 {
 	int ret = 0;
 
@@ -619,11 +742,11 @@ static int ar0521_s_stream(int enable)
 
 	if(enable)
 	{
-		ret = ar0521_stream_on(sensor);
+		ret = ar0521_stream_on(handle);
 	}
 	else
 	{
-		ret = ar0521_stream_off(sensor);
+		ret = ar0521_stream_off(handle);
 	}
 
 	return ret;
@@ -646,13 +769,14 @@ status_t AR0521_Init(camera_device_handle_t *handle, const camera_config_t *conf
 
 	ar0521_set_defaults();
 
-	//ar0521_init_sequencer(sensor);
     /* Initialize. */
     status = AR0521_LoadRegVal(handle, ar0521InitParam, ARRAY_SIZE(ar0521InitParam));
     if (kStatus_Success != status)
     {
         return status;
     }
+
+    //ar0521_parse_endpoint();
 
     return kStatus_Success;
 }
@@ -669,6 +793,10 @@ status_t AR0521_Control(camera_device_handle_t *handle, camera_device_cmd_t cmd,
 
 status_t AR0521_Start(camera_device_handle_t *handle)
 {
+	ar0521_s_power(handle, 1);
+
+	ar0521_s_stream(handle, 1);
+
     return kStatus_Success;
 }
 

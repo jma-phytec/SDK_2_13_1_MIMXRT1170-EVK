@@ -21,14 +21,91 @@
 #define BIT(nr)			((1) << (nr))
 
 #define	AR0521_MODEL_ID				0x3000
+#define	AR0521_FRAME_LENGTH_LINES		0x300a
+#define	AR0521_LINE_LENGTH_PCK			0x300c
 #define	AR0521_RESET_REGISTER			0x301a
+#define		BIT_GROUPED_PARAM_HOLD		BIT(15)
+#define		BIT_GAIN_INSERT_ALL		BIT(14)
+#define		BIT_SMIA_SER_DIS		BIT(12)
+#define		BIT_FORCED_PLL_ON		BIT(11)
+#define		BIT_RESTART_BAD			BIT(10)
+#define		BIT_MASK_BAD			BIT(9)
+#define		BIT_GPI_EN			BIT(8)
+#define		BIT_LOCK_REG			BIT(3)
+#define		BIT_STREAM			BIT(2)
+#define		BIT_RESTART			BIT(1)
 #define		BIT_RESET			BIT(0)
+#define	AR0521_FRAME_STATUS			0x303c
+#define		BIT_PLL_LOCKED			BIT(3)
+#define		BIT_FRAME_START_DURING_GPH	BIT(2)
+#define		BIT_STANDBY_STATUS		BIT(1)
+#define		BIT_FRAMESYNC			BIT(0)
+#define	AR0521_SER_CTRL_STAT			0x31c6
+#define		BIT_FRAMER_TEST_MODE		BIT(7)
+#define	AR0521_SERIAL_TEST			0x3066
+#define AR0521_TEST_LANE_0		(0x1 << 6)
+#define AR0521_TEST_LANE_1		(0x2 << 6)
+#define AR0521_TEST_LANE_2		(0x4 << 6)
+#define AR0521_TEST_LANE_3		(0x8 << 6)
+#define AR0521_TEST_MODE_LP11		(0x1 << 2)
+#define	AR0521_VT_PIX_CLK_DIV			0x0300
+#define	AR0521_VT_SYS_CLK_DIV			0x0302
+#define	AR0521_PRE_PLL_CLK_DIV			0x0304
+#define		BIT_PLL_DIV2(n)			((n) << 8)
+#define		BIT_PLL_DIV1(n)			(n)
+#define	AR0521_PLL_MUL				0x0306
+#define		BIT_PLL_MUL2(n)			((n) << 8)
+#define		BIT_PLL_MUL1(n)			(n)
+#define	AR0521_OP_PIX_CLK_DIV			0x0308
+#define	AR0521_OP_SYS_CLK_DIV			0x030a
+#define	AR0521_X_ADDR_START			0x0344
+#define	AR0521_Y_ADDR_START			0x0346
+#define	AR0521_X_ADRR_END			0x0348
+#define	AR0521_Y_ADRR_END			0x034a
+#define	AR0521_X_OUTPUT_SIZE			0x034c
+#define	AR0521_Y_OUTPUT_SIZE			0x034e
+#define	AR0521_X_ODD_INC			0x30a2
+#define	AR0521_Y_ODD_INC			0x30a6
+
+#define	AR0521_DATA_FORMAT_BITS			0x0112
+#define		BIT_DATA_FMT_IN(n)		((n) << 8)
+#define		BIT_DATA_FMT_OUT(n)		(n)
+#define	AR0521_SERIAL_FORMAT			0x31ae
+#define		BIT_TYPE(n)			((n) << 8)
+#define		BIT_LANES(n)			(n)
+#define AR0521_MIPI_CNTRL			0x3354
+#define	AR0521_MIPI_TIMING_0			0x31b4
+#define		BIT_HS_PREP(n)			((n) << 12)
+#define		BIT_HS_ZERO(n)			((n) << 6)
+#define		BIT_HS_TRAIL(n)			((n) << 1)
+#define	AR0521_MIPI_TIMING_1			0x31b6
+#define		BIT_CLK_PREP(n)			((n) << 12)
+#define		BIT_CLK_ZERO(n)			((n) << 5)
+#define		BIT_CLK_TRAIL(n)		(n)
+#define	AR0521_MIPI_TIMING_2			0x31b8
+#define		BIT_BGAP(n)			((n) << 10)
+#define		BIT_CLK_PRE(n)			((n) << 4)
+#define		BIT_CLK_POST_MSBS(n)		(n)
+#define	AR0521_MIPI_TIMING_3			0x31ba
+#define		BIT_LPX(n)			((n) << 10)
+#define		BIT_WAKEUP(n)			((n) << 3)
+#define		BIT_CLK_POST(n)			(n)
+#define	AR0521_MIPI_TIMING_4			0x31bc
+#define		BIT_CONT_TX_CLK			BIT(15)
+#define		BIT_VREG_MODE			BIT(13)
+#define		BIT_HS_EXIT(n)			((n) << 7)
+#define		BIT_INIT(n)			(n)
 
 
 #define AR0521_CHIP_ID			0x0457
 #define	AR0521_CUSTOMER_REV			0x31fe
 #define AR0521_DEF_WIDTH		2592
 #define AR0521_DEF_HEIGHT		1944
+
+#define AR0521_CSI2_DT_RAW8		0x2a
+#define AR0521_CSI2_DT_RAW10		0x2b
+#define AR0521_CSI2_DT_RAW12		0x2c
+#define AR0521_TYPE_MIPI		2
 
 
 /* YUV (including grey) - next is	0x202e */
@@ -260,10 +337,49 @@ struct ar0521_format {
 	uint32_t	bpp;
 };
 
+struct ar0521_pll_config {
+	uint32_t pll2_div;
+	uint32_t pll2_mul;
+	uint32_t pll_div;
+	uint32_t pll_mul;
+	uint32_t vt_sys_div;
+	uint32_t vt_pix_div;
+	uint32_t op_sys_div;
+	uint32_t op_pix_div;
+	uint32_t vco_freq;
+	uint32_t pix_freq;
+	uint32_t ser_freq;
+};
+
+struct ar0521_businfo {
+	uint16_t num_lanes;
+	uint16_t flags;
+	const uint32_t  *link_freqs;
+
+	uint16_t t_hs_prep;
+	uint16_t t_hs_zero;
+	uint16_t t_hs_trail;
+	uint16_t t_clk_prep;
+	uint16_t t_clk_zero;
+	uint16_t t_clk_trail;
+	uint16_t t_bgap;
+	uint16_t t_clk_pre;
+	uint16_t t_clk_post_msbs;
+	uint16_t t_lpx;
+	uint16_t t_wakeup;
+	uint16_t t_clk_post;
+	uint16_t t_hs_exit;
+	uint16_t t_init;
+	bool cont_tx_clk;
+	bool vreg_mode;
+};
+
 struct ar0521 {
 	struct v4l2_mbus_framefmt fmt;
 	struct v4l2_rect crop;
 	struct ar0521_sensor_limits limits;
+	struct ar0521_businfo info;
+	struct ar0521_pll_config pll[4];
 	enum ar0521_model model;
 	const struct ar0521_format *formats;
 	uint32_t	num_fmts;
