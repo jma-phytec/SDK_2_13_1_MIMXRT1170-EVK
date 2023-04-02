@@ -189,6 +189,35 @@
 #define MEDIA_BUS_FMT_SGRBG16_1X16		0x301f
 #define MEDIA_BUS_FMT_SRGGB16_1X16		0x3020
 
+/* Serial flags */
+/* CSI-2 D-PHY number of data lanes. */
+#define V4L2_MBUS_CSI2_1_LANE			BIT(0)
+#define V4L2_MBUS_CSI2_2_LANE			BIT(1)
+#define V4L2_MBUS_CSI2_3_LANE			BIT(2)
+#define V4L2_MBUS_CSI2_4_LANE			BIT(3)
+/* CSI-2 Virtual Channel identifiers. */
+#define V4L2_MBUS_CSI2_CHANNEL_0		BIT(4)
+#define V4L2_MBUS_CSI2_CHANNEL_1		BIT(5)
+#define V4L2_MBUS_CSI2_CHANNEL_2		BIT(6)
+#define V4L2_MBUS_CSI2_CHANNEL_3		BIT(7)
+/* Clock non-continuous mode support. */
+#define V4L2_MBUS_CSI2_CONTINUOUS_CLOCK		BIT(8)
+#define V4L2_MBUS_CSI2_NONCONTINUOUS_CLOCK	BIT(9)
+
+#define V4L2_MBUS_CSI2_LANES		(V4L2_MBUS_CSI2_1_LANE | \
+					 V4L2_MBUS_CSI2_2_LANE | \
+					 V4L2_MBUS_CSI2_3_LANE | \
+					 V4L2_MBUS_CSI2_4_LANE)
+#define V4L2_MBUS_CSI2_CHANNELS		(V4L2_MBUS_CSI2_CHANNEL_0 | \
+					 V4L2_MBUS_CSI2_CHANNEL_1 | \
+					 V4L2_MBUS_CSI2_CHANNEL_2 | \
+					 V4L2_MBUS_CSI2_CHANNEL_3)
+
+#define AR0521_FREQ_MENU_8BIT		0
+#define AR0521_FREQ_MENU_10BIT		1
+#define AR0521_FREQ_MENU_12BIT		2
+
+
 /*!
  * @brief AR0521 resource.
  *
@@ -203,6 +232,30 @@ typedef struct _ar0521_resource
 
 /*! @brief AR0521 operation functions. */
 extern const camera_device_operations_t ar0521_ops;
+
+/**
+ * enum v4l2_mbus_type - media bus type
+ * @V4L2_MBUS_UNKNOWN:	unknown bus type, no V4L2 mediabus configuration
+ * @V4L2_MBUS_PARALLEL:	parallel interface with hsync and vsync
+ * @V4L2_MBUS_BT656:	parallel interface with embedded synchronisation, can
+ *			also be used for BT.1120
+ * @V4L2_MBUS_CSI1:	MIPI CSI-1 serial interface
+ * @V4L2_MBUS_CCP2:	CCP2 (Compact Camera Port 2)
+ * @V4L2_MBUS_CSI2_DPHY: MIPI CSI-2 serial interface, with D-PHY
+ * @V4L2_MBUS_CSI2_CPHY: MIPI CSI-2 serial interface, with C-PHY
+ * @V4L2_MBUS_INVALID:	invalid bus type (keep as last)
+ */
+enum v4l2_mbus_type {
+	V4L2_MBUS_UNKNOWN,
+	V4L2_MBUS_PARALLEL,
+	V4L2_MBUS_BT656,
+	V4L2_MBUS_CSI1,
+	V4L2_MBUS_CCP2,
+	V4L2_MBUS_CSI2_DPHY,
+	V4L2_MBUS_CSI2_CPHY,
+	V4L2_MBUS_INVALID,
+};
+
 
 enum ar0521_model {
 	AR0521_MODEL_UNKNOWN,

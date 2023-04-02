@@ -752,6 +752,155 @@ static int ar0521_s_stream(camera_device_handle_t *handle, int enable)
 	return ret;
 }
 
+static uint32_t ar0521_clk_mul_div(uint32_t freq, uint16_t mul, uint16_t div)
+{
+	uint32_t result;
+
+	result = freq;
+	result *= mul;
+	result = (result/div);
+
+	return result;
+}
+
+static int ar0521_calculate_pll(struct ar0521_pll_config *pll,
+				unsigned long ext_freq,
+				uint32_t link_freq,
+				uint16_t bpp,
+				uint16_t lanes)
+{
+	unsigned long op_clk;
+	unsigned long vco;
+	unsigned long pix_clk;
+	unsigned long pix_clk_target;
+	unsigned long diff, diff_old;
+	unsigned int div, mul;
+	const struct limit_range div_lim = {.min = 1, .max = 63};
+	const struct limit_range mul_lim = {.min = 32, .max = 254};
+	const struct limit_range pix_lim = {.min = 84000000, .max = 207000000};
+	const struct limit_range vco_lim = {
+		.min = 320000000,
+		.max = 1280000000
+	};
+
+	pix_clk_target = ar0521_clk_mul_div(link_freq, 2 * lanes, bpp);
+	diff_old = pix_clk_target;
+
+	pll->pll_div = 3;
+	pll->pll_mul = 89;
+	pll->pll2_div = 1;
+	pll->pll2_mul = 0;
+	pll->op_sys_div = 1;
+	pll->op_pix_div = 2;
+	pll->vt_sys_div = 1;
+	pll->vt_pix_div = bpp / 2;
+
+	div = div_lim.min;
+	mul = mul_lim.min;
+
+	while (div <= div_lim.max) {
+		if (mul % 2 != 0)
+			mul++;
+
+		if (mul > mul_lim.max) {
+			mul = mul_lim.min;
+			div++;
+			if (div > div_lim.max)
+				break;
+		}
+
+		vco = ar0521_clk_mul_div(ext_freq, mul, div);
+
+		if (vco < vco_lim.min || vco > vco_lim.max) {
+			mul++;
+			continue;
+		}
+
+		pix_clk = ar0521_clk_mul_div(vco, 2, pll->vt_pix_div);
+		op_clk = ar0521_clk_mul_div(pix_clk, 1, 4);
+
+		if (pix_clk < (2 * pix_lim.min) ||
+		    pix_clk > (2 * pix_lim.max)) {
+			mul++;
+			continue;
+		}
+
+		if (pix_clk > pix_clk_target) {
+			mul++;
+			continue;
+		}
+
+		diff = pix_clk_target - pix_clk;
+		if (diff >= diff_old) {
+			mul++;
+			continue;
+		}
+
+		diff_old = diff;
+
+		pll->pll2_div = div;
+		pll->pll2_mul = mul;
+		pll->vco_freq = vco;
+		pll->pix_freq = pix_clk;
+		pll->ser_freq = ar0521_clk_mul_div(pix_clk, bpp, 2 * lanes);
+
+		mul++;
+	}
+
+	return 0;
+}
+
+static int ar0521_parse_endpoint(void)
+{
+	uint32_t *link_freqs;
+	uint32_t ext_freq = 27000000;
+	uint16_t tmp;
+	int i;
+	int ret;
+
+	sensor->info.num_lanes = 2;
+	sensor->info.flags |= V4L2_MBUS_CSI2_CONTINUOUS_CLOCK;
+	sensor->info.flags |= V4L2_MBUS_CSI2_CHANNEL_0;
+	switch (sensor->info.num_lanes) {
+	case 2:
+		sensor->info.flags |= V4L2_MBUS_CSI2_2_LANE;
+		break;
+	case 4:
+		sensor->info.flags |= V4L2_MBUS_CSI2_4_LANE;
+		break;
+	default:
+		break;
+	}
+
+	for (i = 0; i < 3; i++) {
+		ret = ar0521_calculate_pll(&sensor->pll[i], ext_freq,
+					   50400000,
+					   (i*2+8),
+					   sensor->info.num_lanes);
+		link_freqs[i] = sensor->pll[i].ser_freq;
+	}
+
+	sensor->info.link_freqs = link_freqs;
+	sensor->pll[3] = sensor->pll[AR0521_FREQ_MENU_12BIT];
+	sensor->info.t_hs_prep = 2;
+	sensor->info.t_hs_zero = 15;
+	sensor->info.t_hs_trail = 9;
+	sensor->info.t_clk_prep = 2;
+	sensor->info.t_clk_zero = 34;
+	sensor->info.t_clk_trail = 10;
+	sensor->info.t_bgap = 10;
+	sensor->info.t_clk_pre = 1;
+	sensor->info.t_clk_post_msbs = 3;
+	sensor->info.t_lpx = 7;
+	sensor->info.t_wakeup = 15;
+	sensor->info.t_clk_post = 1;
+	sensor->info.cont_tx_clk = true;
+	sensor->info.vreg_mode = false;
+	sensor->info.t_hs_exit = 13;
+	sensor->info.t_init = 12;
+
+	return ret;
+}
 
 status_t AR0521_Init(camera_device_handle_t *handle, const camera_config_t *config)
 {
@@ -776,7 +925,7 @@ status_t AR0521_Init(camera_device_handle_t *handle, const camera_config_t *conf
         return status;
     }
 
-    //ar0521_parse_endpoint();
+    ar0521_parse_endpoint();
 
     return kStatus_Success;
 }
