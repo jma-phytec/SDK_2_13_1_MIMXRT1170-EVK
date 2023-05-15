@@ -169,8 +169,8 @@
 #define BOARD_CODEC_I2C_CLOCK_FREQ           (24000000U)
 
 /* @Brief Board CAMERA configuration */
-#define BOARD_CAMERA_I2C_BASEADDR      LPI2C6
-#define BOARD_CAMERA_I2C_CLOCK_ROOT    kCLOCK_Root_Lpi2c6
+#define BOARD_CAMERA_I2C_BASEADDR      LPI2C2
+#define BOARD_CAMERA_I2C_CLOCK_ROOT    kCLOCK_Root_Lpi2c2
 #define BOARD_CAMERA_I2C_CLOCK_SOURCE  (1U)  /* OSC24M. */
 #define BOARD_CAMERA_I2C_CLOCK_DIVIDER (12U) /* Divider = 12, LPI2C clock frequency 2M. */
 
@@ -195,10 +195,10 @@
 #define BOARD_MIPI_PANEL_TOUCH_INT_PIN           31
 
 /*! @brief The camera pins. */
-#define BOARD_CAMERA_PWDN_GPIO GPIO9
-#define BOARD_CAMERA_PWDN_PIN  25
+#define BOARD_CAMERA_PWDN_GPIO GPIO13
+#define BOARD_CAMERA_PWDN_PIN  03
 #define BOARD_CAMERA_RST_GPIO  GPIO11
-#define BOARD_CAMERA_RST_PIN   15
+#define BOARD_CAMERA_RST_PIN   01
 
 /* SD card detection method when using wifi module. */
 #define BOARD_WIFI_SD_DETECT_TYPE kSDMMCHOST_DetectCardByHostDATA3
